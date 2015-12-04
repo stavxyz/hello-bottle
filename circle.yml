@@ -1,0 +1,14 @@
+# circle.yml
+# $APP_NAME is the name of the app
+# $CIRCLE_SHA1 will be filled in automatically by CircleCI.
+# $DOCKER_EMAIL, $DOCKER_USER, $DOCKER_PASS must be set with the
+# Quay robot account creds in the CircleCI env vars.
+machine:
+  python:
+    version: 2.7.10
+  services:
+    - docker
+
+test:
+  override:
+    - nosetests -v
