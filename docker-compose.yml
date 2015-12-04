@@ -1,0 +1,14 @@
+hello:
+  build: .
+  ports:
+    - 8080:8080
+  links:
+    - mongo
+hello-lb:
+  ports:
+  - 443:8080
+  image: rancher/load-balancer-service
+  links:
+  - hello
+mongo:
+  image: mongo

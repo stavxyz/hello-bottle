@@ -1,0 +1,13 @@
+hello:
+  scale: 3
+hello-lb:
+  scale: 1
+  default_cert: wildcard
+  health_check:
+    port: 42
+    interval: 2000
+    unhealthy_threshold: 3
+    healthy_threshold: 2
+    response_timeout: 2000
+mongo:
+  scale: 1
