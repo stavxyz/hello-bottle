@@ -17,9 +17,7 @@ dependencies:
 
 test:
   override:
-    - pip install -U -r requirements.txt
-    - pip install -U -r test-requirements.txt
-    - nosetests -v
+    - tox -v
     - docker build -t quay.io/maws/hello-bottle:$CIRCLE_SHA1 .
 
 deployment:
