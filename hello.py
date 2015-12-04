@@ -2,6 +2,19 @@
 
 from __future__ import print_function
 
+from gevent import monkey  # noqa
+monkey.patch_all()  # noqa
+
+import json
+import logging
+import operator
+import sys
+import traceback
+
+import bottle
+import bson
+import pymongo
+
 
 # __about__
 __title__ = 'hello-bottle'
@@ -13,17 +26,6 @@ __email__ = 'smlstvnh@gmail.com'
 __keywords__ = ['python', 'bottle', 'docker', 'rancher']
 __license__ = 'Apache License, Version 2.0'
 # __about__
-
-
-import json
-import logging
-import operator
-import sys
-import traceback
-
-import bottle
-import bson
-import pymongo
 
 
 LOG = logging.getLogger(__name__)
@@ -39,8 +41,8 @@ def _default(self, obj):
     return _default.default(obj)
 
 
-original_default, json.JSONEncoder.default = json.JSONEncoder.default, _default
-_default.default = original_default
+_original, json.JSONEncoder.default = json.JSONEncoder.default, _default
+_default.default = _original
 
 
 #
@@ -92,6 +94,13 @@ def httperror_handler(error):
 @bottle_app.get('/')
 def hello():
     return "Hello World!\n"
+
+
+@bottle_app.get('/version')
+def hello():
+    return {
+        'version': __version__,
+    }
 
 
 @bottle_app.get('/docs/<object_id>')
@@ -169,17 +178,121 @@ def fmt_routes(bapp):
 #
 
 
-def main(debug=True):
-    if debug:
+def main(bottle_args, mongo_args):
+    mc = _mongoclient(**mongo_args)
+    if bottle_args.get('debug'):
         bottle.debug(True)
 
     bottle_app.default_error_handler = httperror_handler
     print('\n{}'.format(fmt_routes(bottle_app)), end='\n\n')
-    bottle.run(bottle_app, host='0.0.0.0', port=8080, debug=debug)
+    bottle.run(bottle_app, **bottle_args)
+
+
+def _setup_log_options(parser):
+    # Logging options
+    default = logging.INFO
+    loglevel_group = parser.add_argument_group(
+        title='Logging options').add_mutually_exclusive_group()
+    loglevel_group.add_argument(
+        '--verbose', '-v',
+        help='Run with a DEBUG loglevel to stdout',
+        action='store_const', const=logging.DEBUG,
+        dest='loglevel',
+        default=default,
+    )
+    loglevel_group.add_argument(
+        '--silent',
+        help='Run *without* logging to stdout',
+        dest='loglevel',
+        const=False, action='store_const',
+        default=default,
+    )
+    loglevel_group.add_argument(
+        '--log-level', '-l',
+        help=('Run with this loglevel (e.g. debug, warning, '
+              'info, etc.) on the logging handler'),
+        type=lambda x: getattr(logging, x.upper(), None) or int(x),
+        default=default,
+        dest='loglevel',
+    )
+
 
 
 def cli():
-    main()
+
+    import argparse
+    import atexit
+    import sys
+
+    parser = argparse.ArgumentParser(
+        description="Hello Bottle Application.",
+    )
+    _setup_log_options(parser)
+
+    parser.add_argument(
+        '--server', '-s',
+        help='Server adapter to use. See bottle.server_names',
+        default='gevent',
+    )
+    parser.add_argument(
+        '--host', '-t',
+        help='Server address to bind to.',
+        default='0.0.0.0',
+    )
+    parser.add_argument(
+        '--port', '-p',
+        default=8080,
+        help='Server port to bind to.',
+    )
+    parser.add_argument(
+        '--debug', '-d',
+        action='store_true',
+        help=('Run bottle server with debug=True which is useful for '
+              'development or troubleshooting. Warning: This may expose raw '
+              'tracebacks and unmodified error messages in responses! Note: '
+              'this is not an option to configure DEBUG level logging.'),
+        default=True,
+    )
+
+    #
+    # MONGO
+    #
+    parser.add_argument(
+        '--mongo-host',
+        help='MongoDB Server address to bind to.',
+        default='127.0.0.1',
+    )
+    parser.add_argument(
+        '--mongo-port',
+        type=int,
+        default=27017,
+        help='MongoDB Server port to bind to.',
+    )
+
+    # Parse args and run the program.
+    args = parser.parse_args()
+
+    if args.loglevel is False:
+        logging.getLogger().addHandler(logging.NullHandler())
+    else:
+        logging.basicConfig(
+            level=args.loglevel,
+            stream=sys.stderr,
+            format='%(message)s'
+        )
+    # unpack args
+    bottle_args = {
+        'server': args.server,
+        'host': args.host,
+        'port': args.port,
+        'debug': args.debug,
+    }
+
+    mongo_args = {
+        'host': args.mongo_host,
+        'port': args.mongo_port,
+    }
+    main(bottle_args, mongo_args)
 
 
 if __name__ == '__main__':

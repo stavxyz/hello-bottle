@@ -29,6 +29,7 @@ ENTRY_POINTS = {
 
 INSTALL_REQUIRES = [
     'bottle>=0.12.9',
+    'gevent>=1.1rc1',
     'pymongo>=3.1.1',
 
 ]
