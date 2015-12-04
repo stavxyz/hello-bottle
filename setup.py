@@ -20,6 +20,13 @@ with open(os.path.join(here, 'hello.py'), 'r') as abt:
     exec(abt, {'__builtins__': {}}, about)
 
 
+ENTRY_POINTS = {
+    'console_scripts': [
+        'hello-bottle=hello:cli'
+    ]
+}
+
+
 INSTALL_REQUIRES = [
     'bottle>=0.12.9',
     'pymongo>=3.1.1',
@@ -50,6 +57,7 @@ package_attributes = {
     'author_email': about['__email__'],
     'classifiers': CLASSIFIERS,
     'description': about['__summary__'],
+    'entry_points': ENTRY_POINTS,
     'install_requires': INSTALL_REQUIRES,
     'keywords': ' '.join(about['__keywords__']),
     'name': about['__title__'],
