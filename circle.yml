@@ -13,6 +13,7 @@ dependencies:
   override:
     - wget https://releases.rancher.com/compose/beta/v0.5.2/rancher-compose-linux-amd64-v0.5.2.tar.gz
     - tar -xvzf rancher-compose-linux-amd64-v0.5.2.tar.gz
+    - pip install boto
 
 test:
   override:
@@ -23,7 +24,13 @@ deployment:
   pull_requests:
     branch: /pull\/.*/
     commands:
-      - ./rancher-compose-v0.5.2/rancher-compose -p ${CIRCLE_BRANCH} up -d
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS quay.io
+      - docker tag quay.io/maws/hello-bottle:$CIRCLE_SHA1 quay.io/maws/hello-bottle:latest
+      - docker push quay.io/maws/hello-bottle:$CIRCLE_SHA1
+      - docker push quay.io/maws/hello-bottle:latest
+      - ./rancher-compose-v0.5.2/rancher-compose -p ${CIRCLE_BRANCH} create
+      - ./rancher-compose-v0.5.2/rancher-compose -p ${CIRCLE_BRANCH} start -d
+      - python ./deploy/pr_dns.py
 
   master-deploy:
     branch: master

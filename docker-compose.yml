@@ -1,5 +1,5 @@
 hello:
-  build: .
+  image: quay.io/maws/hello-bottle
   links:
     - mongo
 mongo:
