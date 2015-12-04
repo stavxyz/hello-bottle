@@ -17,6 +17,7 @@ dependencies:
 test:
   override:
     - nosetests -v
+    - docker build -t quay.io/maws/hello-bottle:$CIRCLE_SHA1 .
 
 deployment:
   pull_requests:
