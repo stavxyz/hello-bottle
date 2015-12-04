@@ -1,24 +1,21 @@
-# A super-simple "hello world" server that exposes port 8080
-#
-# VERSION               0.1.0
-FROM ubuntu
-MAINTAINER Joshua Conner <joshua.conner@gmail.com>
-
-# create user
-RUN groupadd web
-RUN useradd -d /home/bottle -m bottle
-
-# make sure sources are up to date
-RUN echo "deb http://archive.ubuntu.com/ubuntu precise main universe" > /etc/apt/sources.list
-RUN apt-get update
-RUN apt-get upgrade -y
+FROM alpine
 
 # install pip and hello-world server requirements
-RUN apt-get install python-pip libevent-dev -y
+RUN mkdir -p /var/hellobottle
+WORKDIR /var/hellobottle
+RUN apk --update add python3 python3-dev libevent-dev libffi-dev build-base
 ADD hello.py /home/bottle/server.py
-RUN pip install bottle
+COPY requirements.txt /
+RUN pip3 install -U pip
+RUN pip3 install -U -r /requirements.txt
+COPY . /var/hellobottle
+# Install the hellobottle app
+RUN ["pip3", "install", "/var/hellobottle"]
 
 # in case you'd prefer to use links, expose the port
 EXPOSE 8080
-ENTRYPOINT ["/usr/bin/python", "/home/bottle/server.py"]
-USER bottle
+ENV PYTHONUNBUFFERED 1
+ENTRYPOINT ["/usr/bin/python3", \
+            "/var/hellobottle/hello.py", \
+            "--debug", "--verbose", \
+            "--mongo-host", "mongo"]

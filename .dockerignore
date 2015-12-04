@@ -1,0 +1,7 @@
+.git
+.tox
+tests
+.gitignore
+README.md
+docker-compose.yml
+circle.yml
