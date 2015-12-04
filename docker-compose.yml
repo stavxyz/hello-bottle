@@ -1,5 +1,7 @@
 hello:
-  image: quay.io/maws/hello-bottle
+  ports:
+    - 8080:8080
+  build: .
   links:
     - mongo
 mongo:
