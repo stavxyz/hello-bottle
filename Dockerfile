@@ -14,7 +14,7 @@ RUN apt-get update
 RUN apt-get upgrade -y
 
 # install pip and hello-world server requirements
-RUN apt-get install python-pip -y
+RUN apt-get install python-pip libevent-dev -y
 ADD hello.py /home/bottle/server.py
 RUN pip install bottle
 
