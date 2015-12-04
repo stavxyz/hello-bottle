@@ -12,3 +12,9 @@ machine:
 test:
   override:
     - nosetests -v
+
+deployment:
+  pull_requests:
+    branch: /pull\/.*/
+    commands:
+      - rancher-compose -p ${CIRCLE_BRANCH} up
