@@ -1,4 +1,4 @@
 hello:
-  scale: 3
+  scale: 1
 mongo:
   scale: 1
