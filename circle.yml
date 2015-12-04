@@ -13,7 +13,7 @@ dependencies:
   override:
     - wget https://releases.rancher.com/compose/beta/v0.5.2/rancher-compose-linux-amd64-v0.5.2.tar.gz
     - tar -xvzf rancher-compose-linux-amd64-v0.5.2.tar.gz
-    - pip install boto
+    - pip install -U boto tox
 
 test:
   override:
