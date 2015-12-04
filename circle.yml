@@ -17,9 +17,24 @@ dependencies:
 test:
   override:
     - nosetests -v
+    - docker build -t quay.io/maws/hello-bottle:$CIRCLE_SHA1 .
 
 deployment:
   pull_requests:
     branch: /pull\/.*/
     commands:
       - ./rancher-compose-v0.5.2/rancher-compose -p ${CIRCLE_BRANCH} up -d
+
+  master-deploy:
+    branch: master
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS quay.io
+      - docker tag quay.io/maws/hello-bottle:$CIRCLE_SHA1 quay.io/maws/hello-bottle:latest
+      - docker push quay.io/maws/hello-bottle:$CIRCLE_SHA1
+      - docker push quay.io/maws/hello-bottle:latest
+
+  branch-deploy:
+    branch: /.*/
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS quay.io
+      - docker push quay.io/maws/hello-bottle:$CIRCLE_SHA1
