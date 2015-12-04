@@ -15,7 +15,7 @@ RUN apt-get upgrade -y
 
 # install pip and hello-world server requirements
 RUN apt-get install python-pip -y
-ADD server.py /home/bottle/server.py
+ADD hello.py /home/bottle/server.py
 RUN pip install bottle
 
 # in case you'd prefer to use links, expose the port
