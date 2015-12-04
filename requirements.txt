@@ -1,0 +1,2 @@
+bottle==0.12.9
+pymongo==3.1.1
